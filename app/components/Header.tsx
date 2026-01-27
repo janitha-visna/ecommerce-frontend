@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // <-- new hook
 import { ShoppingCart, Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
@@ -9,7 +10,15 @@ import { useAuth } from "../context/AuthContext";
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { cartCount } = useCart();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const pathname = usePathname(); // <-- current route
+
+  const navLinks = [
+    { href: "/", label: "Home" },
+    { href: "/collection", label: "Collection" },
+    { href: "/about", label: "About Us" },
+    { href: "/contact", label: "Contact" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -18,30 +27,31 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              ShopBrand
+              PREWAVE
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/" className="text-black">
-              Home
-            </Link>
-
-            <Link href="/collection" className="text-black">
-              Collection
-            </Link>
-
-            <Link href="/about" className="text-black">
-              About Us
-            </Link>
-
-            <Link href="/contact" className="text-black">
-              Contact
-            </Link>
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`font-medium ${
+                  pathname === link.href
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-black hover:text-blue-600"
+                } transition-colors`}
+              >
+                {link.label}
+              </Link>
+            ))}
 
             {user ? (
-              <Link href="/profile" className="text-black">
+              <Link
+                href="/profile"
+                className="text-black hover:text-blue-600 font-medium"
+              >
                 Hi, {user.name.split(" ")[0]}
               </Link>
             ) : (
@@ -90,23 +100,22 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden border-t border-slate-100 bg-white">
           <div className="space-y-1 px-4 py-4">
-            <MobileLink href="/" setIsMenuOpen={setIsMenuOpen}>
-              Home
-            </MobileLink>
+            {navLinks.map((link) => (
+              <MobileLink
+                key={link.href}
+                href={link.href}
+                isActive={pathname === link.href}
+                setIsMenuOpen={setIsMenuOpen}
+              >
+                {link.label}
+              </MobileLink>
+            ))}
 
-            <MobileLink href="/collection" setIsMenuOpen={setIsMenuOpen}>
-              Collection
-            </MobileLink>
-
-            <MobileLink href="/about" setIsMenuOpen={setIsMenuOpen}>
-              About Us
-            </MobileLink>
-
-            <MobileLink href="/contact" setIsMenuOpen={setIsMenuOpen}>
-              Contact
-            </MobileLink>
-
-            <MobileLink href="/cart" setIsMenuOpen={setIsMenuOpen}>
+            <MobileLink
+              href="/cart"
+              isActive={pathname === "/cart"}
+              setIsMenuOpen={setIsMenuOpen}
+            >
               Cart ({cartCount})
             </MobileLink>
 
@@ -126,20 +135,26 @@ export default function Header() {
   );
 }
 
-/* Reusable styles */
+/* Mobile Link Component */
 const MobileLink = ({
   href,
   children,
   setIsMenuOpen,
+  isActive,
 }: {
   href: string;
   children: React.ReactNode;
   setIsMenuOpen: (value: boolean) => void;
+  isActive?: boolean;
 }) => (
   <Link
     href={href}
     onClick={() => setIsMenuOpen(false)}
-    className="block px-3 py-2 text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg font-medium"
+    className={`block px-3 py-2 rounded-lg font-medium transition-colors ${
+      isActive
+        ? "bg-blue-100 text-blue-600"
+        : "text-slate-600 hover:bg-slate-50 hover:text-blue-600"
+    }`}
   >
     {children}
   </Link>

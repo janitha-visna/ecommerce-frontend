@@ -16,7 +16,7 @@ export default function ShopLayout({
                     <main className="flex-1">
                         {children}
                     </main>
-                    <Footer />
+                    <Footer/>
                 </div>
             </CartProvider>
         </AuthProvider>
