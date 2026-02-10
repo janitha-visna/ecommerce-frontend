@@ -1,49 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductCard from "@/app/components/ProductCard";
 import FilterMenu from "@/app/components/FilterMenu";
 import Pagination from "@/app/components/Pagination";
-import { PRODUCTS } from "@/app/lib/prodcuts";
 
+const ITEMS_PER_PAGE = 10;
+const API_URL = "http://localhost:5000/api/products";
 
 export default function CollectionPage() {
+  const [products, setProducts] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
     null
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
 
-  const ITEMS_PER_PAGE = 10;
+  useEffect(() => {
+    fetchProducts();
+  }, [selectedCategory, selectedSubCategory, currentPage]);
 
-  // Get available subcategories based on selected category
-  const availableSubCategories = Array.from(
-    new Set(
-      PRODUCTS.filter((p) =>
-        selectedCategory ? p.category === selectedCategory : true
-      )
-        .map((p) => p.subCategory)
-        .filter((sub): sub is string => !!sub)
-    )
-  ).sort();
+  const fetchProducts = async () => {
+    setLoading(true);
 
-  // Filter logic
-  const filteredProducts = PRODUCTS.filter((product) => {
-    const matchesCategory =
-      selectedCategory === null || product.category === selectedCategory;
-    const matchesSubCategory =
-      selectedSubCategory === null ||
-      product.subCategory === selectedSubCategory;
-    return matchesCategory && matchesSubCategory;
-  });
+    const params = new URLSearchParams();
+    params.append("page", currentPage.toString());
+    params.append("limit", ITEMS_PER_PAGE.toString());
 
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+    if (selectedCategory) params.append("category", selectedCategory);
+    if (selectedSubCategory) params.append("subCategory", selectedSubCategory);
+
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const data = await res.json();
+
+    setProducts(data.products);
+    setTotalPages(data.totalPages); 
+    setLoading(false);
+  };
+  
 
   const handleCategoryChange = (category: string | null) => {
     setSelectedCategory(category);
@@ -57,25 +53,26 @@ export default function CollectionPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="max-w-7xl mx-auto px-4 py-12">
       <section className="flex flex-col md:flex-row gap-10">
-        {/* Sidebar Filters */}
         <FilterMenu
-          categories={["Men", "Women", "Kids", "Accessories"]}
-          subCategories={availableSubCategories}
+          categories={["men", "women", "kids", "accessories"]}
+          subCategories={["topwear", "bottomwear", "footwear", "innerwear"]}
           selectedCategory={selectedCategory}
           selectedSubCategory={selectedSubCategory}
           onSelectCategory={handleCategoryChange}
           onSelectSubCategory={handleSubCategoryChange}
         />
 
-        {/* Product Grid */}
         <div className="flex-1">
-          {currentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
-              {currentProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+          {loading ? (
+            <p className="text-center py-20">Loading products...</p>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((product) => {
+                console.log("Product:", product); // <-- logs each product
+                return <ProductCard key={product.id} product={product} />;
+              })}
             </div>
           ) : (
             <div className="text-center py-20 bg-slate-50 rounded-xl">
@@ -85,7 +82,6 @@ export default function CollectionPage() {
             </div>
           )}
 
-          {/* Pagination */}
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}

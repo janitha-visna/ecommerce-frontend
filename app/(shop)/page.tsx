@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import ProductCard from "../components/ProductCard";
 
 // Import products from separate file
-import { PRODUCTS } from "../lib/prodcuts";
+import { Product } from "../lib/prodcuts";
 
 export default function HomePage() {
   // Show latest 8 products
@@ -14,15 +14,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      
-      
-
       {/* Hero Section */}
       <section className="relative bg-gray-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-center text-center">
-          <h1 className="text-5xl font-bold mb-4">
-            Welcome to Store
-          </h1>
+          <h1 className="text-5xl font-bold mb-4">Welcome to Store</h1>
           <p className="text-xl mb-8 max-w-2xl">
             Discover the latest fashion, accessories, and lifestyle products!
           </p>
@@ -56,7 +51,7 @@ export default function HomePage() {
                 className="border rounded-lg overflow-hidden hover:shadow-lg transition"
               >
                 <img
-                  src={product.image}
+                  src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-56 object-cover"
                 />
@@ -73,7 +68,6 @@ export default function HomePage() {
           <p className="text-center text-gray-500">No products available.</p>
         )}
       </section>
-
     </div>
   );
 }
