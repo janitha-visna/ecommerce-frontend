@@ -10,7 +10,7 @@ import { Product } from "../lib/prodcuts";
 
 export default function HomePage() {
   // Show latest 8 products
-  const latestProducts = PRODUCTS.slice(-8).reverse();
+  //const latestProducts = PRODUCTS.slice(-8).reverse();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,30 +43,7 @@ export default function HomePage() {
         <h2 className="text-3xl font-semibold mb-10 text-center text-black">
           Latest Collection
         </h2>
-        {latestProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {latestProducts.map((product) => (
-              <div
-                key={product.id}
-                className="border rounded-lg overflow-hidden hover:shadow-lg transition"
-              >
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-56 object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{product.name}</h3>
-                  <p className="text-blue-600 font-bold mt-2">
-                    ${product.price.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-gray-500">No products available.</p>
-        )}
+        
       </section>
     </div>
   );

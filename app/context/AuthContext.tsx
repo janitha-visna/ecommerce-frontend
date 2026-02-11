@@ -2,69 +2,100 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 type User = {
-    name: string;
-    email: string;
-    role: "user" | "admin";
+  id: number;
+  name: string;
+  email: string;
+  role: "user" | "admin";
 };
 
 type AuthContextType = {
-    user: User | null;
-    login: (email: string, role: "user" | "admin") => void;
-    register: (name: string, email: string) => void;
-    logout: () => void;
-    isLoading: boolean;
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-    useEffect(() => {
-        // Check local storage for persisted user
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-            setUser(JSON.parse(savedUser));
-        }
-        setIsLoading(false);
-    }, []);
+  // 🔁 Restore session from cookies
+  useEffect(() => {
+    const storedUser = Cookies.get("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setIsLoading(false);
+  }, []);
 
-    const login = (email: string, role: "user" | "admin") => {
-        const newUser = { name: "Test User", email, role };
-        setUser(newUser);
-        localStorage.setItem("user", JSON.stringify(newUser));
-        if (role === "admin") router.push("/admin");
-        else router.push("/profile");
-    };
+  // 🔐 LOGIN
+  const login = async (email: string, password: string) => {
+    const res = await fetch("http://localhost:5000/api/auth/signin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-    const register = (name: string, email: string) => {
-        const newUser = { name, email, role: "user" as const };
-        setUser(newUser);
-        localStorage.setItem("user", JSON.stringify(newUser));
-        router.push("/profile");
-    };
+    if (!res.ok) {
+      throw new Error("Invalid credentials");
+    }
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem("user");
-        router.push("/login");
-    };
+    const data = await res.json();
 
-    return (
-        <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+    // ✅ Save to cookies
+    Cookies.set("token", data.token, { expires: 7 });
+    Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+
+    setUser(data.user);
+
+    if (data.user.role === "admin") router.push("/admin");
+    else router.push("/profile");
+  };
+
+  // 📝 REGISTER
+  const register = async (name: string, email: string, password: string) => {
+    const res = await fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Registration failed");
+    }
+
+    // after signup → login page
+    router.push("/login");
+  };
+
+  // 🚪 LOGOUT
+  const logout = () => {
+    Cookies.remove("token");
+    Cookies.remove("user");
+    setUser(null);
+    router.push("/login");
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ user, login, register, logout, isLoading }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error("useAuth must be used within a AuthProvider");
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 }

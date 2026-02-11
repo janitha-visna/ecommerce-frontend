@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation"; // <-- new hook
 import { ShoppingCart, Menu, X, Search } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -12,6 +12,11 @@ export default function Header() {
   const { cartCount } = useCart();
   const { user } = useAuth();
   const pathname = usePathname(); // <-- current route
+
+  // ✅ Correct place to log the user
+  useEffect(() => {
+    console.log("Auth user:", user);
+  }, [user]);
 
   const navLinks = [
     { href: "/", label: "Home" },
