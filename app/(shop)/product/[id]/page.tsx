@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCart } from "../../../context/CartContext";
+import ProductImage from "../../../components/ProductImage"; // 👈 new import
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -23,8 +23,6 @@ export default function ProductDetailsPage() {
 
         const data = await res.json();
         setProduct(data);
-
-        // Set initial quantity to 1 or 0 if out of stock
         setQuantity(data.stock > 0 ? 1 : 0);
       } catch (err) {
         console.error(err);
@@ -40,8 +38,6 @@ export default function ProductDetailsPage() {
   if (loading) return <p className="text-center py-20">Loading product...</p>;
   if (!product) return <p className="text-center py-20">Product not found</p>;
 
-  const imageUrl = `http://localhost:5000/api/products/${product.id}/image`;
-
   const handleAddToCart = () => {
     if (quantity > product.stock) {
       alert("Cannot add more than available stock");
@@ -51,9 +47,9 @@ export default function ProductDetailsPage() {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: imageUrl,
+      image: `http://localhost:5000/api/products/${product.id}/image`, // keep for fallback
       quantity,
-      size: product.sizes, // ✅ size comes from backend
+      size: product.sizes,
     });
     alert(`Added ${quantity} item(s) of size ${product.sizes} to cart!`);
   };
@@ -71,12 +67,11 @@ export default function ProductDetailsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Image */}
         <div className="relative aspect-[4/5] bg-slate-100 rounded-2xl overflow-hidden">
-          <Image
-            src={imageUrl}
+          <ProductImage
+            productId={product.id}
             alt={product.name}
             fill
             className="object-cover"
-            unoptimized
           />
         </div>
 
@@ -96,7 +91,7 @@ export default function ProductDetailsPage() {
             </span>
           </p>
 
-          {/* Size (from backend, non-editable) */}
+          {/* Size */}
           <p className="mb-4 text-sm">
             Size: <span className="font-medium">{product.sizes}</span>
           </p>
