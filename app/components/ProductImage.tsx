@@ -27,6 +27,8 @@ export default function ProductImage({
 
   useEffect(() => {
     let isMounted = true;
+    let objectUrl: string | null = null;
+
     const token = Cookies.get("token");
     const imageEndpoint = `http://localhost:5000/api/products/${productId}/image`;
 
@@ -49,6 +51,7 @@ export default function ProductImage({
 
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
+        objectUrl = url;
 
         if (isMounted) {
           setImageUrl(url);
@@ -68,11 +71,11 @@ export default function ProductImage({
     // Cleanup function to revoke blob URL when component unmounts
     return () => {
       isMounted = false;
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [productId, imageUrl]);
+  }, [productId]); // ✅ Only depend on productId, NOT on imageUrl
 
   // Loading state
   if (isLoading) {
