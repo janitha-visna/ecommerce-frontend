@@ -14,6 +14,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  adminLogin: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
@@ -59,6 +60,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     else router.push("/profile");
   };
 
+  // 🔐 ADMIN LOGIN - Separate function for admin
+  const adminLogin = async (email: string, password: string) => {
+    const res = await fetch("http://localhost:5000/api/auth/admin-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Invalid admin credentials");
+    }
+
+    const data = await res.json();
+
+    // Check if user is actually an admin
+    if (data.user.role !== "admin") {
+      throw new Error("Access denied. Admin privileges required.");
+    }
+
+    // ✅ Save to cookies
+    Cookies.set("token", data.token, { expires: 7 });
+    Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+
+    setUser(data.user);
+
+    // Always redirect to admin dashboard
+    router.push("/admin");
+  };
+
   // 📝 REGISTER
   const register = async (name: string, email: string, password: string) => {
     const res = await fetch("http://localhost:5000/api/auth/signup", {
@@ -84,9 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ user, login, register, logout, isLoading }}
-    >
+    <AuthContext.Provider value={{ user, login,adminLogin, register, logout, isLoading, }}>
       {children}
     </AuthContext.Provider>
   );

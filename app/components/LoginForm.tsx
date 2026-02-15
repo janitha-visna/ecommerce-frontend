@@ -14,7 +14,7 @@ export default function LoginForm({
   isAdmin = false,
   onToggle,
 }: LoginFormProps) {
-  const { login } = useAuth();
+  const { login, adminLogin } = useAuth(); // Get both login functions
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -23,13 +23,19 @@ export default function LoginForm({
     setLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      // AuthContext handles redirection based on role
+      if (isAdmin) {
+        // Use admin login for admin portal
+        await adminLogin(formData.email, formData.password);
+      } else {
+        // Use regular login for customer portal
+        await login(formData.email, formData.password);
+      }
+      // No need to handle redirect here - AuthContext handles it
     } catch (err: any) {
       alert(err.message || "Invalid email or password");
-    } finally {
       setLoading(false);
     }
+    // Don't set loading false on success - component will unmount
   };
 
   return (
@@ -125,7 +131,7 @@ export default function LoginForm({
           </button>
         </form>
 
-        {/* Register link */}
+        {/* Register link - only for non-admin */}
         {!isAdmin && onToggle && (
           <div className="mt-6 text-center text-sm text-gray-700">
             Don&apos;t have an account?{" "}

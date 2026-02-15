@@ -1,6 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
-import ProductImage from "./ProductImage"; // 👈 new import
+import ProductImage from "./ProductImage";
+import Cookies from "js-cookie";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export interface Product {
   id: number;
@@ -9,53 +15,97 @@ export interface Product {
   subCategory: string;
   price: number;
   description: string;
-  imageUrl: string;
+  sizes: string; // "XS,S,M,L"
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  const sizeOptions = product.sizes.split(",");
+  const selectedSize = sizeOptions[0];
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault(); // 🚀 prevents Link redirect
+    e.stopPropagation(); // 🚀 prevents parent click
+
+    setLoading(true);
+    const token = Cookies.get("token");
+
+    if (!token) {
+      toast.error("Please log in first.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          size: selectedSize,
+          quantity: 1,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add to cart");
+
+      toast.success(`${product.name} added to cart 🛒`);
+    } catch (err: any) {
+      toast.error(err.message || "Error adding to cart");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Link href={`/product/${product.id}`} className="group block">
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 transform hover:-translate-y-1">
-        {/* Image Container */}
-        <div className="relative aspect-[4/5] bg-slate-100 overflow-hidden">
+    <div className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      {/* Image Section */}
+      <div className="relative aspect-[4/5] bg-slate-100 overflow-hidden">
+        <Link href={`/product/${product.id}`}>
           <ProductImage
             productId={product.id}
             alt={product.name}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
           />
+        </Link>
 
-          {/* Quick Action Overlay */}
-          <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex justify-center">
-            <button className="bg-white/90 backdrop-blur shadow-lg text-slate-900 px-6 py-2 rounded-full font-medium text-sm hover:bg-blue-600 hover:text-white transition-colors">
-              View Details
-            </button>
-          </div>
-        </div>
+        {/* Cart Icon */}
+        <button
+          onClick={handleAddToCart}
+          disabled={loading}
+          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md hover:bg-blue-600 hover:text-white transition z-10"
+        >
+          <ShoppingCart size={18} />
+        </button>
+      </div>
 
-        {/* Content */}
-        <div className="p-5">
-          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">
-            {product.category}
-            {product.subCategory && (
-              <span className="text-slate-400 font-normal normal-case ml-1">
-                • {product.subCategory}
-              </span>
-            )}
-          </p>
-          <h3 className="font-semibold text-slate-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
+      {/* Info Section */}
+      <div className="p-5">
+        <Link href={`/product/${product.id}`}>
+          <h3 className="font-semibold text-slate-900 mb-2 truncate group-hover:text-blue-600 cursor-pointer">
             {product.name}
           </h3>
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-slate-900">
-              ${product.price.toFixed(2)}
-            </span>
-            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-              <ShoppingCart size={16} />
-            </div>
-          </div>
+        </Link>
+
+        {/* ✅ PRICE NOW CLEARLY VISIBLE */}
+        <div className="mb-2">
+          <span className="text-lg font-bold text-slate-900">
+            ${product.price.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="text-sm text-slate-600">
+          Sizes: {sizeOptions.join(", ")}
         </div>
       </div>
-    </Link>
+    </div>
   );
+  
+  
 }
