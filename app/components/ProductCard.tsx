@@ -96,7 +96,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* ✅ PRICE NOW CLEARLY VISIBLE */}
         <div className="mb-2">
           <span className="text-lg font-bold text-slate-900">
-            ${product.price.toFixed(2)}
+            Rs{product.price.toFixed(2)}
           </span>
         </div>
 

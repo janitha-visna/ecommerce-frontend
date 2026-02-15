@@ -3,14 +3,19 @@
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import ProductCard from "../components/ProductCard";
-
-// Import products from separate file
-import { Product } from "../lib/prodcuts";
 
 export default function HomePage() {
-  // Show latest 8 products
-  //const latestProducts = PRODUCTS.slice(-8).reverse();
+  // Sample upcoming product images
+  const upcomingProducts = [
+    "/images/1.jpg",
+    "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+    "https://images.unsplash.com/photo-1627481758827-bd4b5b2393f5?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1618354699726-2c4d9e7d42c7?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1618354699726-7a9e9bdfc7d0?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1627481758825-4b25bb1c3e6f?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1606813902652-8d9d6f0c3c3b?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1618354699726-3e5a9f4c1d2b?auto=format&fit=crop&w=400&q=80",
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,7 +48,21 @@ export default function HomePage() {
         <h2 className="text-3xl font-semibold mb-10 text-center text-black">
           Latest Collection
         </h2>
-        
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          {upcomingProducts.map((img, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-xl shadow-lg hover:scale-105 transition-transform"
+            >
+              <img
+                src={img}
+                alt={`Upcoming product ${index + 1}`}
+                className="w-full h-56 object-cover"
+              />
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

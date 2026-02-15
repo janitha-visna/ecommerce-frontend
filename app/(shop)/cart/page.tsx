@@ -73,6 +73,48 @@ export default function CartPage() {
     fetchCart();
   }, [token, router]);
 
+  // Remove item from cart (calls backend)
+  const removeFromCart = async (cartItemId: number) => {
+    if (!cart) return;
+
+    const token = Cookies.get("token");
+    if (!token) {
+      toast.error("You must be logged in to remove items from cart");
+      return;
+    }
+
+    try {
+      console.log("Deleting cart item:", cartItemId);
+
+      const res = await fetch(`http://localhost:5000/api/cart/${cartItemId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("DELETE response status:", res.status);
+      const data = await res.json();
+      console.log("DELETE response data:", data);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to delete item from cart");
+      }
+
+      // Remove locally
+      setCart({
+        ...cart,
+        CartItems: cart.CartItems.filter((item) => item.id !== cartItemId),
+      });
+
+      toast.success("Item removed from cart");
+    } catch (err: any) {
+      console.error("Error removing cart item:", err);
+      toast.error(err.message || "Failed to remove item");
+    }
+  };
+
   // Update quantity in cart
   const updateQuantity = (cartItemId: number, newQty: number) => {
     if (!cart) return;
@@ -83,15 +125,6 @@ export default function CartPage() {
       CartItems: cart.CartItems.map((item) =>
         item.id === cartItemId ? { ...item, quantity: newQty } : item
       ),
-    });
-  };
-
-  // Remove item from cart
-  const removeFromCart = (cartItemId: number) => {
-    if (!cart) return;
-    setCart({
-      ...cart,
-      CartItems: cart.CartItems.filter((item) => item.id !== cartItemId),
     });
   };
 
@@ -292,7 +325,7 @@ export default function CartPage() {
                     <div className="text-right">
                       <p className="text-sm text-slate-400 mb-1">Price</p>
                       <p className="font-bold text-lg text-slate-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        Rs{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -312,7 +345,7 @@ export default function CartPage() {
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
                   <span className="font-medium text-slate-900">
-                    ${cartTotal.toFixed(2)}
+                    Rs{cartTotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-slate-600">
@@ -327,7 +360,7 @@ export default function CartPage() {
                 <div className="border-t border-slate-100 pt-4 mt-4">
                   <div className="flex justify-between text-lg font-bold text-slate-900">
                     <span>Total</span>
-                    <span>${cartTotal.toFixed(2)}</span>
+                    <span>Rs{cartTotal.toFixed(2)}</span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">Including VAT</p>
                 </div>
