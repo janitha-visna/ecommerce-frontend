@@ -44,7 +44,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                             <h3 className="font-semibold text-slate-900 mb-2">Contact</h3>
-                            <p className="text-slate-500">+94 11 234 5678<br />hello@antigravity.com</p>
+                            <p className="text-slate-500">+94 11 234 5678<br />maleesha@gmai.com</p>
                         </div>
                     </div>
                 </div>

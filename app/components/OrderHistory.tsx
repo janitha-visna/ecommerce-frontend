@@ -167,7 +167,7 @@ export default function OrderHistory() {
                     Total
                   </p>
                   <p className="font-bold text-slate-900">
-                    ${order.total.toFixed(2)}
+                    Rs{order.total.toFixed(2)}
                   </p>
                 </div>
                 <div>
@@ -213,7 +213,7 @@ export default function OrderHistory() {
                         {item.quantity}x {item.name}
                       </span>
                       <span className="font-medium text-slate-900">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        Rs{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}

@@ -37,6 +37,15 @@ export default function CartPage() {
   const [loading, setLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const router = useRouter();
+  const [shipping, setShipping] = useState<number>(0);
+
+  useEffect(() => {
+    const randomShipping = Math.floor(Math.random() * 10) + 1;
+    // Generates number between 1 and 10
+    setShipping(randomShipping);
+  }, []);
+  
+  
 
   const token = Cookies.get("token");
 
@@ -132,6 +141,8 @@ export default function CartPage() {
   const cartTotal = cart
     ? cart.CartItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
     : 0;
+
+  const finalTotal = cartTotal + shipping;
 
   // Checkout
   const handleCheckout = async () => {
@@ -350,17 +361,15 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-slate-600">
                   <span>Shipping</span>
-                  <span className="text-green-600 font-medium">Free</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Tax</span>
-                  <span className="font-medium text-slate-900">$0.00</span>
+                  <span className="font-medium text-slate-900">
+                    Rs{shipping.toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="border-t border-slate-100 pt-4 mt-4">
                   <div className="flex justify-between text-lg font-bold text-slate-900">
                     <span>Total</span>
-                    <span>Rs{cartTotal.toFixed(2)}</span>
+                    <span>Rs{finalTotal.toFixed(2)}</span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">Including VAT</p>
                 </div>

@@ -1,22 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // <-- new hook
+import { usePathname } from "next/navigation";
 import { ShoppingCart, Menu, X, Search } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useCart } from "../context/CartContext";
+import Cookies from "js-cookie";
 import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { cartCount } = useCart();
+  const [cartItemsCount, setCartItemsCount] = useState(0);
   const { user } = useAuth();
-  const pathname = usePathname(); // <-- current route
+  const pathname = usePathname();
 
-  // ✅ Correct place to log the user
+  // ✅ Fetch cart count using js-cookie token
   useEffect(() => {
-    console.log("Auth user:", user);
-  }, [user]);
+    const fetchCartCount = async () => {
+      try {
+        const token = Cookies.get("token");
+
+        if (!token) {
+          setCartItemsCount(0);
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/api/cart", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            accept: "*/*",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch cart");
+        }
+
+        const data = await res.json();
+
+        // ✅ Calculate total quantity
+        const totalQuantity = data.CartItems
+          ? data.CartItems.reduce(
+              (acc: number, item: any) => acc + item.quantity,
+              0
+            )
+          : 0;
+
+        setCartItemsCount(totalQuantity);
+      } catch (error) {
+        console.error("Error fetching cart count:", error);
+        setCartItemsCount(0);
+      }
+    };
+
+    fetchCartCount();
+  }, []);
 
   const navLinks = [
     { href: "/", label: "Home" },
@@ -75,18 +113,21 @@ export default function Header() {
               <Search className="w-5 h-5" />
             </button>
 
+            {/* 🛒 Cart */}
             <Link
               href="/cart"
               className="relative p-2 text-slate-600 hover:text-blue-600 transition-colors group"
             >
               <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              {cartCount > 0 && (
+
+              {cartItemsCount > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                  {cartCount}
+                  {cartItemsCount}
                 </span>
               )}
             </Link>
 
+            {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 text-slate-600"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -121,7 +162,7 @@ export default function Header() {
               isActive={pathname === "/cart"}
               setIsMenuOpen={setIsMenuOpen}
             >
-              Cart ({cartCount})
+              Cart ({cartItemsCount})
             </MobileLink>
 
             {!user && (

@@ -76,18 +76,6 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Secured Payment */}
-          <div>
-            <h4 className="text-white font-semibold mb-6">
-              Secured Payment Gateways
-            </h4>
-            <img
-              src="/pay.png"
-              alt="Payment Options"
-              className="h-12 object-contain"
-            />
-          </div>
         </div>
 
         {/* Footer Bottom */}

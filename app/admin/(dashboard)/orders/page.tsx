@@ -124,7 +124,7 @@ export default function AdminOrdersPage() {
                 <td className="p-4 text-sm">{order.status}</td>
 
                 <td className="p-4 font-bold">
-                  ${order.totalAmount?.toFixed(2)}
+                  Rs{order.totalAmount?.toFixed(2)}
                 </td>
 
                 <td className="p-4 text-right">

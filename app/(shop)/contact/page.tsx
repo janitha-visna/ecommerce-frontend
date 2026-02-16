@@ -26,7 +26,7 @@ export default function ContactPage() {
               Suite 350, Washington, USA
             </p>
             <p className="text-lg mb-2 font-medium">Tel: (415) 555-0132</p>
-            <p className="text-lg mb-2 font-medium">Email: admin@forever.com</p>
+            <p className="text-lg mb-2 font-medium">Email: maleesha@gmail.com</p>
           </div>
 
           {/* Careers */}

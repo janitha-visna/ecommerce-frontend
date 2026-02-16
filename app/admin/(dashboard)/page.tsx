@@ -67,7 +67,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {categoryStats.map((stat) => {
+        {categoryStats.slice(0,3).map((stat) => {
           const Icon = ICONS_MAP[stat.name] || Package;
           const color = COLORS_MAP[stat.name] || "bg-gray-500";
 

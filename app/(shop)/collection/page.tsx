@@ -56,7 +56,7 @@ export default function CollectionPage() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       <section className="flex flex-col md:flex-row gap-10">
         <FilterMenu
-          categories={["men", "women", "kids", "accessories"]}
+          categories={["men", "women", "kids"]}
           subCategories={["topwear", "bottomwear", "footwear", "innerwear"]}
           selectedCategory={selectedCategory}
           selectedSubCategory={selectedSubCategory}
